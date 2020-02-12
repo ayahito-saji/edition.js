@@ -1,0 +1,25 @@
+{
+  "name": "edition.js",
+  "version": "0.0.1",
+  "description": "edition.js is a simple edition management library for node.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "ava -v"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ayahito-saji/edition.js.git"
+  },
+  "author": "Ayahito Saji <ayahito_saji@outlook.com> (https://ayahito.jp)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ayahito-saji/edition.js/issues"
+  },
+  "homepage": "https://github.com/ayahito-saji/edition.js#readme",
+  "devDependencies": {
+    "ava": "^3.3.0"
+  },
+  "dependencies": {
+    "diff": "^4.0.2"
+  }
+}
