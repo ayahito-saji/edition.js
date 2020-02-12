@@ -1,5 +1,5 @@
 var test = require('ava');
-var Edition = require('../index');
+var Edition = require('../src/index');
 
 var edition = new Edition();
 
