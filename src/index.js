@@ -30,68 +30,74 @@ module.exports = function () {
   }
 
   var patches = []
-  var lastBody = ""
+  var base = null
 
   this.dump = function () {
     return JSON.stringify({
       "patches": patches,
-      "lastBody": lastBody
+      "base": base
     })
   }
 
   this.parse = function (dumped) {
     parsed = JSON.parse(dumped)
     patches = parsed.patches
-    lastBody = parsed.lastBody
+    base = parsed.base
     return this
   }
 
   this.update = function ({id, body, header}) {
-    if (typeof id !== undefined) {
-
-      var patch = createPatch(lastBody, body)
-
-      patches.push({
-        id: id,
-        header: header,
-        patch: patch
-      })
-
-      lastBody = body
-
+    if (id === undefined) {
+      id = new Date().getTime().toString(16) + Math.floor(65536*Math.random()).toString(16) + Math.floor(65536*Math.random()).toString(16)
     }
-    return this
+
+    if (base != null) {
+      patches.push({
+        id: base.id,
+        header: base.header,
+        patch: createPatch(body, base.body)
+      })
+    }
+
+    base = {
+      id: id,
+      header: header,
+      body: body
+    }
+
+    return base
   }
   this.get = function (id) {
-    if (patches.length === 0) throw new ReferenceError("No editions is exist.")
-    if (typeof id === undefined) {
-      var lastPatch = patches[patches.length - 1]
-      return {
-        id: lastPatch.id,
-        header: lastPatch.header,
-        body: lastBody
-      }
-    } else {
-      var body = ""
+    if (this.length === 0) throw new ReferenceError("No editions is exist.")
+    if (typeof id === undefined || id === base.id) {
+      return base
+    }
+    else {
+      var body = base.body
 
       var i = 0;
-      for (i=0;i<patches.length;i++){
+      for (i=patches.length - 1;i>=0;i--){
         var patch = patches[i]
         body = applyPatch(body, patch.patch)
-        if (patch.id === id || i === patches.length - 1) break
-      }
-      return {
-        id: patch.id,
-        header: patch.header,
-        body: body
+        if (patch.id === id) {
+          return {
+            id: patch.id,
+            header: patch.header,
+            body: body
+          }
+        } else if (i === 0) return base
       }
     }
   }
   this.__defineGetter__("length", function() {
-    return patches.length;
+    return patches.length + (base !== null ? 1 : 0);
   });
 
   this.__defineGetter__("patches", function() {
     return patches;
+  });
+
+  this.__defineGetter__("base", function() {
+    return base;
   });
 }

@@ -4,16 +4,19 @@ var Edition = require('../src/index');
 var edition = new Edition();
 
 test('Edition#test 01', function(t) {
-  t.is(new Edition().dump(), JSON.stringify({ patches: [], lastBody: "" }));
+  t.is(new Edition().dump(), JSON.stringify({ patches: [], base: null }));
 });
 
 test('Edition#test 02', function(t) {
-  edition = new Edition().update({ id: "v1", body: "aaa", header: null })
-    t.deepEqual(edition.get("v1"), { id: "v1", body: "aaa", header: null });
+  edition = new Edition()
+  edition.update({ id: "v1", body: "aaa", header: null })
+  t.deepEqual(edition.get("v1"), { id: "v1", body: "aaa", header: null });
 });
 
 test('Edition#test 03', function(t) {
-  edition = new Edition().update({ id: "v1", body: "aaa", header: null }).update({ id: "v2", body: "aaa\nbbb", header: null })
+  edition = new Edition()
+  edition.update({ id: "v1", body: "aaa", header: null })
+  edition.update({ id: "v2", body: "aaa\nbbb", header: null })
     t.deepEqual(edition.get("v1"), { id: "v1", body: "aaa", header: null });
 });
 
@@ -132,5 +135,18 @@ test('Edition#test 13', function(t) {
   t.deepEqual(edition2.get("v6"), { id: "v6", body: "aaa\nccc", header: null });
   t.deepEqual(edition2.get("v7"), { id: "v7", body: "ccc\n", header: null });
   t.deepEqual(edition2.get("v8"), { id: "v8", body: "", header: null });
+
+});
+
+test('Edition#test 14', function(t) {
+  edition = new Edition()
+  t.is(edition.length, 0)
+
+  p1 = edition.update({ body: "bbb", header: null })
+  p2 = edition.update({ body: "aaa", header: null })
+
+  t.is(edition.length, 2)
+  t.deepEqual(edition.get(p1.id), { id: p1.id, body: "bbb", header: null });
+  t.deepEqual(edition.get(p2.id), { id: p2.id, body: "aaa", header: null });
 
 });
