@@ -1,5 +1,33 @@
 module.exports = function () {
-  jsdiff = require("diff")
+  var jsdiff = require("diff")
+  // create patch with jsdiff
+  var createPatch = function (origin, other) {
+    return diff = jsdiff.diffLines(origin, other).map(function (part) {
+      return part.added === true ? [1, part.value] :
+             part.removed === true ? [2, part.count] :[0, part.count]
+    })
+  }
+  // パッチ適用関数
+  var applyPatch = function (origin, patch) {
+    var tmp = origin.split("\n")
+    tmp = tmp.map(function (line, i) { return i < tmp.length - 1 ? line + '\n' : line })
+    var count = 0
+    patch.forEach(function(part) {
+      switch (part[0]) {
+        case 0:
+          count += part[1]
+          break
+        case 1:
+          tmp.splice(count, 0, part[1])
+          count ++
+          break
+        case 2:
+          tmp.splice(count, part[1])
+      }
+    })
+    tmp = tmp.join('')
+    return tmp
+  }
 
   var patches = []
   var lastBody = ""
@@ -21,13 +49,12 @@ module.exports = function () {
   this.update = function ({id, body, header}) {
     if (typeof id !== undefined) {
 
-      var patch = jsdiff.createPatch("", lastBody, body)
-      let parsedPatch = jsdiff.parsePatch(patch)[0].hunks;
+      var patch = createPatch(lastBody, body)
 
       patches.push({
         id: id,
         header: header,
-        patch: parsedPatch
+        patch: patch
       })
 
       lastBody = body
@@ -50,14 +77,7 @@ module.exports = function () {
       var i = 0;
       for (i=0;i<patches.length;i++){
         var patch = patches[i]
-        body = jsdiff.applyPatch(body, [ {
-          oldFileName: '',
-          oldHeader: '',
-          newFileName: '',
-          newHeader: '',
-          hunks: patch.patch
-        } ])
-
+        body = applyPatch(body, patch.patch)
         if (patch.id === id || i === patches.length - 1) break
       }
       return {
